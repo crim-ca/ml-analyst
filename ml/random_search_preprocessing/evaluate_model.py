@@ -62,7 +62,11 @@ def evaluate_model(dataset, save_file, random_state, pipeline_components, pipeli
         accuracy = accuracy_score(labels, cv_predictions)
         macro_f1 = f1_score(labels, cv_predictions, average='macro')
         balanced_accuracy = balanced_accuracy_score(labels, cv_predictions)
-        roc_auc = roc_auc_score(labels,cv_probabilities)
+        try:
+            roc_auc = roc_auc_score(labels,cv_probabilities)
+        except ValueError as ve:
+            print("roc_auc_score: %s" % (str(ve)))
+            roc_auc = -1
 
         preprocessor_classes = [p[0] for p in pipeline_components[:-1]]
         
