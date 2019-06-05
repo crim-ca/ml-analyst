@@ -1,9 +1,7 @@
-import pandas as pd
 import numpy as np
 import argparse
 import os, errno, sys
-from sklearn.externals.joblib import Parallel, delayed
-
+from joblib import Parallel, delayed
 
 if __name__ == '__main__':
     # parse command line arguments
@@ -108,14 +106,33 @@ if __name__ == '__main__':
                 save_file = results_path + '/' + dataset + '_' + ml + '.csv'  
             
             if args.PREP: 
-                all_commands.append('python {PATH}/{ML}.py {DATASET} {SAVEFILE} {N_COMBOS} {RS} {PREP} {LABEL}'.format(PATH=model_dir,ML=ml,DATASET=args.INPUT_FILE,SAVEFILE=save_file,N_COMBOS=args.N_COMBOS,RS=random_state,PREP=args.PREP,LABEL=args.LABEL)) 
+                all_commands.append('{PYTHON_EXEC} {PATH}/{ML}.py {DATASET} {SAVEFILE} {N_COMBOS} {RS} {PREP} {LABEL}'.\
+                                    format(PYTHON_EXEC=sys.executable,
+                                           PATH=model_dir,
+                                           ML=ml,
+                                           DATASET=args.INPUT_FILE,
+                                           SAVEFILE=save_file,
+                                           N_COMBOS=args.N_COMBOS,
+                                           RS=random_state,
+                                           PREP=args.PREP,
+                                           LABEL=args.LABEL))
             elif args.SEARCH == 'random':
-                all_commands.append('python {PATH}/{ML}.py {DATASET} {SAVEFILE} {N_COMBOS} {RS}'.format(PATH=model_dir,ML=ml,DATASET=args.INPUT_FILE,SAVEFILE=save_file,N_COMBOS=args.N_COMBOS,RS=random_state))
+                all_commands.append('{PYTHON_EXEC} {PATH}/{ML}.py {DATASET} {SAVEFILE} {N_COMBOS} {RS}'.\
+                                    format(PYTHON_EXEC=sys.executable,
+                                           PATH=model_dir,
+                                           ML=ml,
+                                           DATASET=args.INPUT_FILE,
+                                           SAVEFILE=save_file,
+                                           N_COMBOS=args.N_COMBOS,
+                                           RS=random_state))
             else:
-                all_commands.append('python {PATH}/{ML}.py {DATASET} {SAVEFILE} {RS}'.format(
-                                    PATH=model_dir,ML=ml,DATASET=args.INPUT_FILE,
-                                    SAVEFILE=save_file,RS=random_state)
-                                   )
+                all_commands.append('{PYTHON_EXEC} {PATH}/{ML}.py {DATASET} {SAVEFILE} {RS}'.\
+                                    format(PYTHON_EXEC=sys.executable,
+                                           PATH=model_dir,
+                                           ML=ml,
+                                           DATASET=args.INPUT_FILE,
+                                           SAVEFILE=save_file,
+                                           RS=random_state))
             job_info.append({'ml':ml,'dataset':dataset,'results_path':results_path})
 
     if args.LSF:    # bsub commands
@@ -133,5 +150,8 @@ if __name__ == '__main__':
             bsub_cmd +=  '"' + run_cmd + '"'
             print(bsub_cmd)
             os.system(bsub_cmd)     # submit jobs 
-    else:   # run locally  
+    else:   # run locally
+        print("Will locally run these:\n")
+        for run_cmd in all_commands:
+            print(run_cmd)
         Parallel(n_jobs=args.N_JOBS)(delayed(os.system)(run_cmd) for run_cmd in all_commands )
