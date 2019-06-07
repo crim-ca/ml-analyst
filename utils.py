@@ -4,6 +4,13 @@ from eli5.sklearn import PermutationImportance
 import matplotlib.pyplot as plt
 from sklearn.metrics import roc_curve, auc
 import pdb
+from typing import List
+from collections import OrderedDict
+
+
+def remove_duplicates(a_list: List) -> List:
+    """Removes duplicates on a list, respecting ordering."""
+    return list(OrderedDict.fromkeys(a_list))
 
 def feature_importance(save_file, model, model_name, feature_names, training_features, training_classes, random_state,
                        preps, prep_params, clf_name, clf_params):
@@ -23,8 +30,10 @@ def feature_importance(save_file, model, model_name, feature_names, training_fea
                 j = j+1
             else:
                 new_coefs[i] = 0
-    coefs = new_coefs
-    assert(len(coefs)==len(feature_names))
+        coefs = new_coefs
+    elif len(coefs) > len(feature_names):
+        coefs = coefs[:len(feature_names)]
+    assert len(coefs) == len(feature_names), "%d coefs, %d feature names" % (len(coefs), len(feature_names))
 #    plot_imp_score(save_file, coefs, feature_names, random_state)
 
     out_text=''
@@ -40,6 +49,7 @@ def feature_importance(save_file, model, model_name, feature_names, training_fea
         
     with open(save_file.split('.')[0] + '.imp_score','a') as out:
         out.write(out_text)
+    print("'feature importance' written on %s" % (save_file))
 
 def compute_imp_score(model, model_name, training_features, training_classes, random_state):
     clf = model.named_steps[model_name]    
@@ -81,7 +91,11 @@ def roc(save_file, model, y_true, probabilities, random_state, preps, prep_param
     """prints receiver operator chacteristic curve data"""
 
     # pdb.set_trace()
-    fpr,tpr,_ = roc_curve(y_true, probabilities)
+    try:
+        fpr,tpr,_ = roc_curve(y_true, probabilities)
+    except ValueError as ve:
+        print("'roc': impossible to calculate, because '%s'" % (ve))
+        return
 
     AUC = auc(fpr,tpr)
     model_name = save_file.split('/')[-1][:-4]
@@ -99,5 +113,6 @@ def roc(save_file, model, y_true, probabilities, random_state, preps, prep_param
 
     with open(save_file.split('.')[0] + '.roc','a') as out:
         out.write(out_text)
+    print("'roc' written on %s" % (save_file))
 
 
