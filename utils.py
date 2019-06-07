@@ -4,6 +4,13 @@ from eli5.sklearn import PermutationImportance
 import matplotlib.pyplot as plt
 from sklearn.metrics import roc_curve, auc
 import pdb
+from typing import List
+from collections import OrderedDict
+
+
+def remove_duplicates(a_list: List) -> List:
+    """Removes duplicates on a list, respecting ordering."""
+    return list(OrderedDict.fromkeys(a_list))
 
 def feature_importance(save_file, model, model_name, feature_names, training_features, training_classes, random_state,
                        preps, prep_params, clf_name, clf_params):
