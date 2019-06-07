@@ -15,7 +15,7 @@ class TestCirculationGraph(unittest.TestCase):
         pass
 
     def test_minimal(self):
-        input_file = "iris.csv"
+        input_file = "datasets/iris.csv"
         output_dir = "/tmp/test_analyze"
         args = get_parser().parse_args(
             [input_file, "-ml", "LogisticRegression,SVC", "-prep", "RobustScaler,Normalizer", "-results", output_dir])
